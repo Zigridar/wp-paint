@@ -3,31 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <title>WorkPermit Maps</title>
-<!--    <script src="https://cdn.jsdelivr.net/npm/poly-decomp@0.3.0/build/decomp.min.js"></script>-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
-<!--    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.14.2/matter.min.js" integrity="sha256-Bmvb4pJWin8rqq3GnwPz/hxBtqXaMdZHJnHYlpRULa4=" crossorigin="anonymous"></script>-->
-    <script src="https://cdn.jsdelivr.net/npm/pathseg@1.2.0/pathseg.min.js"></script>
-<!--    <script src="https://cdnjs.cloudflare.com/ajax/libs/gojs/2.1.21/go-debug.min.js" integrity="sha512-Iax5il77+MP4QGqK2VhnI93TIC/X7+N3n6K+Xa0DhqAu+LHX5cQ53OEeCo6oBoEbFmR/KLmsqLxBrKlD6iDerg==" crossorigin="anonymous"></script>-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/3.6.3/fabric.min.js" integrity="sha512-DwbCgiW/2uFJkC4G3dIZmQuEY4aDajSrKaovVFnbVz5+ziJ7fvlWZ2CVEPommhxV8LNB/8uurTxNTzIkkh8PJQ==" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="style.css" rel="stylesheet">
 </head>
 <body>
-    <div class="row">
-        <div class="col s4">
-            <div id="plan-container">
-<!--                <canvas id="plan" width="600" height="400"></canvas>-->
-            </div>
-            <div id="tools-container">
-<!--                <canvas id="tools" width="600" height="400"></canvas>-->
-            </div>
-        </div>
-        <div class="col s8" id="editor-container">
-<!--            <canvas id="editor" width="1000" height="800"></canvas>-->
-        </div>
+    <div class="main-container">
+        <div id="plan-container"></div>
+        <div id="tools-container"></div>
     </div>
+    <div id="editor-container" class="main-container"></div>
+
     <script src="fabric.js"></script>
     <img id="map" src="map.png" style="display: none">
+    <img id="dog" src="dog.jpg" draggable="true">
 </body>
 </html>

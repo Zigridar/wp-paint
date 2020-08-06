@@ -15,3 +15,4 @@ app.listen(PORT, () => {
 app.use(express.static('src/html'))
 app.use(express.static('src/js'))
 app.use(express.static('src/css'))
+app.use(express.static('src/img'))

@@ -3,6 +3,8 @@
 }
  #tool-container {
      overflow-y: auto;
+     background-color: #8984f1;
+     user-select: none;
  }
 div ::-webkit-scrollbar {
     width: 5px;
@@ -20,12 +22,13 @@ div ::-webkit-scrollbar-thumb:hover {
     background: #444;
 }
 
-.tool-img {
-    padding: 10px;
-}
-
 .tool-img:hover {
     -webkit-transform: scale(1.1);
     -ms-transform: scale(1.1);
     transform: scale(1.1);
+}
+
+.tool-img-div {
+    display: inline-block;
+    padding: 15px;
 }

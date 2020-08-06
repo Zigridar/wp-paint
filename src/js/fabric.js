@@ -142,19 +142,29 @@ function addCanvasHandlers(fabricCanvas, canvasContainer) {
 
 /** add tool image to toolbox **/
 function addToolImage(container, imageSrc) {
+    const div = document.createElement('div')
+    div.height = 80
+    div.width = 80
+    div.classList.add('tool-img-div')
     const img = document.createElement('img')
     img.draggable = true
     img.src = imageSrc
-    img.width = 60
-    img.height = 60
     img.classList.add('tool-img')
+    /** calc scale **/
+    const scaleFactor = Math.min(80 / img.naturalWidth, 80 / img.naturalHeight)
+    img.height = img.naturalHeight * scaleFactor
+    img.width = img.naturalWidth * scaleFactor
+    /** drag start handler **/
     img.ondragstart = e => {
         img.classList.add('img-dragging')
         img.customOffsetX = e.clientX - img.offsetLeft
         img.customOffsetY = e.clientY - img.offsetTop
     }
-    img.ondragend = e => {
+    /** drag end handler **/
+    img.ondragend = () => {
         img.classList.remove('img-dragging')
     }
-    container.append(img)
+    /** add image to toolbox **/
+    div.append(img)
+    container.append(div)
 }

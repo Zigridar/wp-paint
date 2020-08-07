@@ -17,10 +17,11 @@ const ELEMENTS =
             tools: 'tools',
             editor: 'editor',
             deleteBtn: 'delete',
-            addTextBtn: 'add-text',
+            createTextBtn: 'create-text',
             resetZoomBtn: 'reset-zoom',
             createRectBtn: 'create-rect',
-            createCircleBtn: 'create-circle'
+            createCircleBtn: 'create-circle',
+            createLineBtn: 'create-line'
         }
 
 //todo get names from server and load using GET method
@@ -64,10 +65,11 @@ $(document).ready(() => {
     /** set toolbar handlers **/
     addToolbarHandlers(
         $(`#${ELEMENTS.deleteBtn}`),
-        $(`#${ELEMENTS.addTextBtn}`),
+        $(`#${ELEMENTS.createTextBtn}`),
         $(`#${ELEMENTS.resetZoomBtn}`),
         $(`#${ELEMENTS.createRectBtn}`),
         $(`#${ELEMENTS.createCircleBtn}`),
+        $(`#${ELEMENTS.createLineBtn}`),
         editor
     )
 
@@ -148,8 +150,17 @@ function addEditorHandlers(fabricCanvas, canvasContainer) {
                 fabricCanvas.currentCreatingObject.set('width', width)
                 fabricCanvas.currentCreatingObject.set('height', height)
             /** circle changer **/
-            } else if (fabricCanvas.currentCreatingObject instanceof fabric.Circle && width > 0) {
+            }
+            else if (fabricCanvas.currentCreatingObject instanceof fabric.Circle && width > 0) {
                 fabricCanvas.currentCreatingObject.set('radius', width/2)
+            }
+            /** line changer **/
+            else if (fabricCanvas.currentCreatingObject instanceof fabric.Line) {
+                fabricCanvas.currentCreatingObject.set({
+                    x2: pointer.x,
+                    y2: pointer.y
+                })
+                fabricCanvas.currentCreatingObject.setCoords()
             }
             fabricCanvas.renderAll()
         }
@@ -169,6 +180,16 @@ function addEditorHandlers(fabricCanvas, canvasContainer) {
             const pointer = fabricCanvas.getPointer(e, false)
             fabricCanvas.currentCreatingObject.left = pointer.x
             fabricCanvas.currentCreatingObject.top = pointer.y
+            /** set line coords **/
+            if (fabricCanvas.currentCreatingObject instanceof fabric.Line) {
+                fabricCanvas.currentCreatingObject.set({
+                    x1: pointer.x,
+                    y1: pointer.y
+                })
+                fabricCanvas.currentCreatingObject.left = pointer.x
+                fabricCanvas.currentCreatingObject.top = pointer.y
+                fabricCanvas.currentCreatingObject.setCoords()
+            }
             fabricCanvas.add(fabricCanvas.currentCreatingObject)
         }
     }
@@ -192,7 +213,6 @@ function addEditorHandlers(fabricCanvas, canvasContainer) {
 
         const pointer = fabricCanvas.getPointer(e, false)
         const img = document.querySelector('img.img-dragging')
-        console.log(pointer.x - img.customOffsetX, pointer.y - img.customOffsetY)
         const fabricImg = createImgFromElem(img, pointer.x - img.customOffsetX, pointer.y - img.customOffsetY)
         fabricCanvas.add(fabricImg)
     }
@@ -237,10 +257,11 @@ function addToolImage(container, imageSrc) {
 /** add toolbar handlers **/
 function addToolbarHandlers(
     deleteBtn,
-    textBtn,
+    createTextBtn,
     resetZoomBtn,
     createRectBtn,
     createCircleBtn,
+    createLineBtn,
     fabricCanvas
     ) {
     /** delete button handler **/
@@ -256,9 +277,9 @@ function addToolbarHandlers(
         fabricCanvas.setViewportTransform([1, 0, 0, 1, 0, 0])
     })
     /** add text button handler **/
-    textBtn.click(() => {
+    createTextBtn.click(() => {
         $('.active').removeClass('active')
-        textBtn.addClass('active')
+        createTextBtn.addClass('active')
         fabricCanvas.currentCreatingObject = createTextBox()
     })
     /** create circle **/
@@ -272,6 +293,12 @@ function addToolbarHandlers(
         $('.active').removeClass('active')
         createRectBtn.addClass('active')
         fabricCanvas.currentCreatingObject = createRect()
+    })
+    /** create line **/
+    createLineBtn.click(() => {
+        $('.active').removeClass('active')
+        createLineBtn.addClass('active')
+        fabricCanvas.currentCreatingObject = createLine()
     })
 }
 
@@ -309,5 +336,8 @@ function createCircle() {
 
 /** create fabric line **/
 function createLine() {
-    //todo
+    return new fabric.Line([], {
+        strokeWidth: 2,
+        stroke: '#000000'
+    })
 }

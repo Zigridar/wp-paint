@@ -6,12 +6,22 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/3.6.3/fabric.min.js" integrity="sha512-DwbCgiW/2uFJkC4G3dIZmQuEY4aDajSrKaovVFnbVz5+ziJ7fvlWZ2CVEPommhxV8LNB/8uurTxNTzIkkh8PJQ==" crossorigin="anonymous"></script>
     <link href="style.css" rel="stylesheet">
+    <link href="font-awesome.min.css" rel="stylesheet">
 </head>
 <body>
         <div class="main-container">
             <div id="plan-container"></div>
             <div id="tool-container">
+                <div id="img-container"></div>
 
+                <div id="icon-bar">
+                    <a id="add-text"><i class="fa fa-font"></i></a>
+                    <a id="add-line"><i>/</i></a>
+                    <a id="reset-zoom"><i class="fa fa-arrows-alt"></i></a>
+                    <a id="create-rect"><i class="fa fa-square-o"></i></a>
+                    <a id="create-circle"><i class="fa fa-circle-o"></i></a>
+                    <a id="delete"><i class="fa fa-trash"></i></a>
+                </div>
             </div>
         </div>
         <div id="editor-container" class="main-container"></div>

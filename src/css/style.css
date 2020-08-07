@@ -1,5 +1,6 @@
 .main-container {
     display: inline-block;
+    position: relative;
 }
  #tool-container {
      overflow-y: auto;
@@ -31,4 +32,32 @@ div ::-webkit-scrollbar-thumb:hover {
 .tool-img-div {
     display: inline-block;
     padding: 15px;
+}
+
+#icon-bar {
+    width: 40px;
+    background-color: #555;
+    position: absolute;
+    right: 0px;
+}
+
+#icon-bar a {
+    display: block;
+    text-align: center;
+    padding: 10px;
+    transition: all 0.3s ease;
+    color: white;
+    font-size: 20px;
+}
+
+#icon-bar a:hover {
+    background-color: #000;
+}
+
+#icon-bar .active {
+    background-color: #000;
+}
+
+#img-container, #icon-bar {
+    display: inline-block;
 }

@@ -11,10 +11,16 @@ const ELEMENTS =
         {
             planContainer: 'plan-container',
             toolContainer: 'tool-container',
+            imageContainer: 'img-container',
             editorContainer: 'editor-container',
             plan: 'plan',
             tools: 'tools',
-            editor: 'editor'
+            editor: 'editor',
+            deleteBtn: 'delete',
+            addTextBtn: 'add-text',
+            resetZoomBtn: 'reset-zoom',
+            createRectBtn: 'create-rect',
+            createCircleBtn: 'create-circle'
         }
 
 //todo get names from server and load using GET method
@@ -46,14 +52,24 @@ $(document).ready(() => {
     const backgroundImg = setImgAsBackground(editor, 'map')
     const editorContainer = document.getElementById(ELEMENTS.editorContainer)
     /** add canvas handlers **/
-    addCanvasHandlers(editor, editorContainer)
+    addEditorHandlers(editor, editorContainer)
 
-    const imageContainer = document.getElementById(ELEMENTS.toolContainer)
+    const imageContainer = document.getElementById(ELEMENTS.imageContainer)
 
     //todo server images
     availableImages.forEach(imageSrc => {
         addToolImage(imageContainer, imageSrc)
     })
+
+    /** set toolbar handlers **/
+    addToolbarHandlers(
+        $(`#${ELEMENTS.deleteBtn}`),
+        $(`#${ELEMENTS.addTextBtn}`),
+        $(`#${ELEMENTS.resetZoomBtn}`),
+        $(`#${ELEMENTS.createRectBtn}`),
+        $(`#${ELEMENTS.createCircleBtn}`),
+        editor
+    )
 
 })
 
@@ -61,6 +77,7 @@ function createCanvas(containerId, canvasId, width, height) {
     $(`#${containerId}`).append(`<canvas id="${canvasId}" width="${width}" height="${height}"></canvas>`)
 }
 
+/** set image as no-editable object **/
 function setImgAsBackground(fabricCanvas, imgId) {
     const fabricImg = createImgFromId(imgId, {
         transparentCorners: false,
@@ -105,7 +122,7 @@ function createImgFromElem(elem, x, y) {
 }
 
 /** add handlers to canvas **/
-function addCanvasHandlers(fabricCanvas, canvasContainer) {
+function addEditorHandlers(fabricCanvas, canvasContainer) {
     /** zoom **/
     fabricCanvas.on('mouse:wheel', opt => {
         const delta = opt.e.deltaY
@@ -118,7 +135,55 @@ function addCanvasHandlers(fabricCanvas, canvasContainer) {
         opt.e.preventDefault()
         opt.e.stopPropagation()
     })
-
+    /** mouse move handler **/
+    fabricCanvas.on('mouse:move', e => {
+        if (fabricCanvas.isCreateNow && fabricCanvas.currentCreatingObject) {
+            const pointer = fabricCanvas.getPointer(e, false)
+            let width = pointer.x - fabricCanvas.currentCreatingObject.left
+            let height = pointer.y - fabricCanvas.currentCreatingObject.top
+            /** rect changer **/
+            if (fabricCanvas.currentCreatingObject instanceof fabric.Rect) {
+                if (width < 0) width = 0
+                if (height < 0) height = 0
+                fabricCanvas.currentCreatingObject.set('width', width)
+                fabricCanvas.currentCreatingObject.set('height', height)
+            /** circle changer **/
+            } else if (fabricCanvas.currentCreatingObject instanceof fabric.Circle && width > 0) {
+                fabricCanvas.currentCreatingObject.set('radius', width/2)
+            }
+            fabricCanvas.renderAll()
+        }
+    })
+    /** mouse down handler **/
+    canvasContainer.onmousedown = e => {
+        /** if current object is fabric.Textbox render it immediately**/
+        if (fabricCanvas.currentCreatingObject instanceof fabric.Textbox) {
+            const pointer = fabricCanvas.getPointer(e, false)
+            fabricCanvas.currentCreatingObject.left = pointer.x - fabricCanvas.currentCreatingObject.width
+            fabricCanvas.currentCreatingObject.top = pointer.y - fabricCanvas.currentCreatingObject.height
+        }
+        /** start drawing **/
+        else if (fabricCanvas.currentCreatingObject && !fabricCanvas.isCreateNow) {
+            fabricCanvas.selection = false
+            fabricCanvas.isCreateNow = true
+            const pointer = fabricCanvas.getPointer(e, false)
+            fabricCanvas.currentCreatingObject.left = pointer.x
+            fabricCanvas.currentCreatingObject.top = pointer.y
+            fabricCanvas.add(fabricCanvas.currentCreatingObject)
+        }
+    }
+    /** stop drawing **/
+    canvasContainer.onmouseup = e => {
+        if (fabricCanvas.isCreateNow || (fabricCanvas.currentCreatingObject instanceof fabric.Textbox)) {
+            fabricCanvas.selection = true
+            fabricCanvas.remove(fabricCanvas.currentCreatingObject)
+            fabricCanvas.add(fabricCanvas.currentCreatingObject)
+            fabricCanvas.currentCreatingObject = null
+            fabricCanvas.isCreateNow = false
+            $('.active').removeClass('active')
+        }
+    }
+    /** drop handler **/
     canvasContainer.ondrop = e => {
         if (e.preventDefault)
             e.preventDefault()
@@ -131,7 +196,7 @@ function addCanvasHandlers(fabricCanvas, canvasContainer) {
         const fabricImg = createImgFromElem(img, pointer.x - img.customOffsetX, pointer.y - img.customOffsetY)
         fabricCanvas.add(fabricImg)
     }
-
+    /** drag over handler **/
     canvasContainer.ondragover = e => {
         if (e.preventDefault) {
             e.preventDefault()
@@ -167,4 +232,82 @@ function addToolImage(container, imageSrc) {
     /** add image to toolbox **/
     div.append(img)
     container.append(div)
+}
+
+/** add toolbar handlers **/
+function addToolbarHandlers(
+    deleteBtn,
+    textBtn,
+    resetZoomBtn,
+    createRectBtn,
+    createCircleBtn,
+    fabricCanvas
+    ) {
+    /** delete button handler **/
+    deleteBtn.click(e => {
+        const activeObjects = fabricCanvas.getActiveObjects()
+        activeObjects.forEach(object => {
+            fabricCanvas.remove(object)
+        })
+        fabricCanvas.discardActiveObject(e)
+    })
+    /** reset zoom button handler **/
+    resetZoomBtn.click(() => {
+        fabricCanvas.setViewportTransform([1, 0, 0, 1, 0, 0])
+    })
+    /** add text button handler **/
+    textBtn.click(() => {
+        $('.active').removeClass('active')
+        textBtn.addClass('active')
+        fabricCanvas.currentCreatingObject = createTextBox()
+    })
+    /** create circle **/
+    createCircleBtn.click(() => {
+        $('.active').removeClass('active')
+        createCircleBtn.addClass('active')
+        fabricCanvas.currentCreatingObject = createCircle()
+    })
+    /** create rect **/
+    createRectBtn.click(() => {
+        $('.active').removeClass('active')
+        createRectBtn.addClass('active')
+        fabricCanvas.currentCreatingObject = createRect()
+    })
+}
+
+/** create fabric rect **/
+function createRect() {
+    return new fabric.Rect({
+        strokeWidth: 2,
+        stroke: 'black',
+        fill:'transparent',
+        transparentCorners: true,
+        hasBorders: true,
+        hasControls: true,
+        editable: true,
+        selectable: true
+    })
+}
+/** create editable textbox **/
+function createTextBox() {
+    return new fabric.Textbox('текст')
+}
+
+/** create fabric circle **/
+function createCircle() {
+    return new fabric.Circle({
+        strokeWidth: 2,
+        stroke: 'black',
+        fill:'transparent',
+        transparentCorners: true,
+        hasBorders: true,
+        hasControls: true,
+        editable: true,
+        selectable: true,
+    })
+}
+
+/** create fabric line **/
+function createLine() {
+    //todo
 }

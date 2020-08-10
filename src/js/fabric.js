@@ -75,6 +75,7 @@ $(document).ready(() => {
 
 })
 
+//todo auto setting dimensions
 function createCanvas(containerId, canvasId, width, height) {
     $(`#${containerId}`).append(`<canvas id="${canvasId}" width="${width}" height="${height}"></canvas>`)
 }
@@ -102,7 +103,7 @@ function setImgAsBackground(fabricCanvas, imgId) {
     if (fabricImg.width * scaleFactor < fabricCanvas.width) {
         fabricImg.left = (fabricCanvas.width - fabricImg.width * scaleFactor) / 2
     }
-    fabricCanvas.add(fabricImg)
+    fabricCanvas.setBackgroundImage(fabricImg, fabricCanvas.renderAll.bind(fabricCanvas))
     return fabricImg
 }
 
@@ -112,7 +113,7 @@ function createImgFromId(imgId, opt = {}) {
     return new fabric.Image(imgElement, opt)
 }
 
-/** create fabric image from HTML elemet **/
+/** create fabric image from HTML element **/
 function createImgFromElem(elem, x, y) {
     const  fabricImg = new fabric.Image(elem, {
         left: x,
@@ -151,8 +152,8 @@ function addEditorHandlers(fabricCanvas, canvasContainer) {
                 fabricCanvas.currentCreatingObject.set('height', height)
             /** circle changer **/
             }
-            else if (fabricCanvas.currentCreatingObject instanceof fabric.Circle && width > 0) {
-                fabricCanvas.currentCreatingObject.set('radius', width/2)
+            else if (fabricCanvas.currentCreatingObject instanceof fabric.Circle) {
+                fabricCanvas.currentCreatingObject.set('radius', Math.abs(width/2))
             }
             /** line changer **/
             else if (fabricCanvas.currentCreatingObject instanceof fabric.Line) {
@@ -175,6 +176,11 @@ function addEditorHandlers(fabricCanvas, canvasContainer) {
         }
         /** start drawing **/
         else if (fabricCanvas.currentCreatingObject && !fabricCanvas.isCreateNow) {
+            fabricCanvas.forEachObject(object => {
+                object.lockMovementX = true
+                object.lockMovementY = true
+            })
+            fabricCanvas.discardActiveObject(e)
             fabricCanvas.selection = false
             fabricCanvas.isCreateNow = true
             const pointer = fabricCanvas.getPointer(e, false)
@@ -196,11 +202,17 @@ function addEditorHandlers(fabricCanvas, canvasContainer) {
     /** stop drawing **/
     canvasContainer.onmouseup = e => {
         if (fabricCanvas.isCreateNow || (fabricCanvas.currentCreatingObject instanceof fabric.Textbox)) {
+            fabricCanvas.forEachObject(object => {
+                object.lockMovementX = false
+                object.lockMovementY = false
+            })
+            fabricCanvas.setActiveObject(fabricCanvas.currentCreatingObject)
             fabricCanvas.selection = true
             fabricCanvas.remove(fabricCanvas.currentCreatingObject)
             fabricCanvas.add(fabricCanvas.currentCreatingObject)
             fabricCanvas.currentCreatingObject = null
             fabricCanvas.isCreateNow = false
+            fabricCanvas.renderAll()
             $('.active').removeClass('active')
         }
     }

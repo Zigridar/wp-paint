@@ -38,7 +38,7 @@ div ::-webkit-scrollbar-thumb:hover {
     width: 40px;
     background-color: #555;
     position: absolute;
-    right: 0px;
+    z-index: 1;
 }
 
 #icon-bar a {

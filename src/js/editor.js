@@ -1,14 +1,15 @@
 'use strict'
 
 /** global constants **/
-const WINDOW_SCALE_FACTOR = 0.95
-const HEIGHT = window.innerHeight * WINDOW_SCALE_FACTOR
-const WIDTH = window.innerWidth * WINDOW_SCALE_FACTOR
-const TOOLS_WIDTH = WIDTH / 3 /** 1/3 **/
-const EDITOR_WIDTH = WIDTH * 2 / 3 /** 2/3 **/
+const WINDOW_SCALE_FACTOR = 0.99
+
+/** global editor link **/
+let editor = null
 
 const ELEMENTS =
         {
+            leftContainer: 'left-container',
+            parent: 'parent',
             planContainer: 'plan-container',
             toolContainer: 'tool-container',
             imageContainer: 'img-container',
@@ -24,43 +25,51 @@ const ELEMENTS =
             createLineBtn: 'create-line'
         }
 
-//todo get names from server and load using GET method
-const availableImages = ['bike.png', 'forest.png', 'stick.png']
-
 /** freeze const object **/
 Object.freeze(ELEMENTS)
 
+/** initial function **/
+const initialFunction = () => {
 
-$(document).ready(() => {
-    /** create different boxes **/
-    createCanvas(ELEMENTS.planContainer, ELEMENTS.plan, TOOLS_WIDTH, HEIGHT / 2)
-    createCanvas(ELEMENTS.editorContainer, ELEMENTS.editor, EDITOR_WIDTH, HEIGHT)
+    const parent = $(`#${ELEMENTS.editorContainer}`).parent()
+    const HEIGHT = parent.height() * WINDOW_SCALE_FACTOR
+    const WIDTH = parent.width() * WINDOW_SCALE_FACTOR
 
     /** init draggable toolbox **/
-    const toolsContainer =  $(`#${ELEMENTS.toolContainer}`)
-    toolsContainer.css('height', HEIGHT / 2)
-    toolsContainer.css('max-width', TOOLS_WIDTH)
+    const $toolsContainer = $(`#${ELEMENTS.toolContainer}`)
+    const $leftContainer = $(`#${ELEMENTS.leftContainer}`)
+    const $editorContainer = $(`#${ELEMENTS.editorContainer}`)
 
-    const plan = new fabric.Canvas('plan', {
+    //todo gen plan
+    const plan = new fabric.Canvas(ELEMENTS.plan, {
         backgroundColor: 'rgb(198,197,250)'
     })
 
-    const editor = new fabric.Canvas('editor', {
+    editor = new fabric.Canvas(ELEMENTS.editor, {
         backgroundColor: 'rgb(255,238,205)'
     })
 
-    //todo add img utils
-    const backgroundImg = setImgAsBackground(editor, 'map')
+    /** set plan dimensions **/
+    plan.setWidth(WIDTH * 0.3)
+    plan.setHeight(HEIGHT * 0.5)
+
+    /** set editor dimensions **/
+    editor.setWidth(WIDTH * 0.7)
+    //todo
+    editor.setHeight(HEIGHT)
+
+    $leftContainer.css('width', WIDTH * 0.3)
+    $leftContainer.css('height', HEIGHT)
+
+    $toolsContainer.css('width', WIDTH * 0.3)
+    $toolsContainer.css('height', HEIGHT * 0.5)
+
+    $editorContainer.css('width', WIDTH * 0.7)
+    $editorContainer.css('height', HEIGHT)
+
     const editorContainer = document.getElementById(ELEMENTS.editorContainer)
     /** add canvas handlers **/
     addEditorHandlers(editor, editorContainer)
-
-    const imageContainer = document.getElementById(ELEMENTS.imageContainer)
-
-    //todo server images
-    availableImages.forEach(imageSrc => {
-        addToolImage(imageContainer, imageSrc)
-    })
 
     /** set toolbar handlers **/
     addToolbarHandlers(
@@ -73,14 +82,11 @@ $(document).ready(() => {
         editor
     )
 
-})
-
-//todo auto setting dimensions
-function createCanvas(containerId, canvasId, width, height) {
-    $(`#${containerId}`).append(`<canvas id="${canvasId}" width="${width}" height="${height}"></canvas>`)
+    /** init editor tool handlers **/
+    initEditor()
 }
 
-/** set image as no-editable object **/
+/** set image as not-editable object **/
 function setImgAsBackground(fabricCanvas, imgId) {
     const fabricImg = createImgFromId(imgId, {
         transparentCorners: false,
@@ -200,7 +206,7 @@ function addEditorHandlers(fabricCanvas, canvasContainer) {
         }
     }
     /** stop drawing **/
-    canvasContainer.onmouseup = e => {
+    canvasContainer.onmouseup = () => {
         if (fabricCanvas.isCreateNow || (fabricCanvas.currentCreatingObject instanceof fabric.Textbox)) {
             fabricCanvas.forEachObject(object => {
                 object.lockMovementX = false
@@ -227,6 +233,7 @@ function addEditorHandlers(fabricCanvas, canvasContainer) {
         const img = document.querySelector('img.img-dragging')
         const fabricImg = createImgFromElem(img, pointer.x - img.customOffsetX, pointer.y - img.customOffsetY)
         fabricCanvas.add(fabricImg)
+        createImageFromEditor()
     }
     /** drag over handler **/
     canvasContainer.ondragover = e => {
@@ -235,35 +242,6 @@ function addEditorHandlers(fabricCanvas, canvasContainer) {
         }
         e.dataTransfer.dropEffect = 'copy'
     }
-}
-
-/** add tool image to toolbox **/
-function addToolImage(container, imageSrc) {
-    const div = document.createElement('div')
-    div.height = 80
-    div.width = 80
-    div.classList.add('tool-img-div')
-    const img = document.createElement('img')
-    img.draggable = true
-    img.src = imageSrc
-    img.classList.add('tool-img')
-    /** calc scale **/
-    const scaleFactor = Math.min(80 / img.naturalWidth, 80 / img.naturalHeight)
-    img.height = img.naturalHeight * scaleFactor
-    img.width = img.naturalWidth * scaleFactor
-    /** drag start handler **/
-    img.ondragstart = e => {
-        img.classList.add('img-dragging')
-        img.customOffsetX = e.clientX - img.offsetLeft
-        img.customOffsetY = e.clientY - img.offsetTop
-    }
-    /** drag end handler **/
-    img.ondragend = () => {
-        img.classList.remove('img-dragging')
-    }
-    /** add image to toolbox **/
-    div.append(img)
-    container.append(div)
 }
 
 /** add toolbar handlers **/
@@ -353,3 +331,71 @@ function createLine() {
         stroke: '#000000'
     })
 }
+
+/** init editor **/
+function initEditor() {
+    //todo
+    /** drop default onDragStart listener **/
+    document.ondragstart = undefined
+    /**  add drag & drop listeners **/
+    $('.tool-img').each((index, item) => {
+        item.draggable = true
+        item.ondragstart = e => {
+            item.classList.add('img-dragging') //todo repair relative offset
+            item.customOffsetX = e.clientX - item.offsetLeft
+            item.customOffsetY = e.clientY - item.offsetTop
+        }
+        /** drag end handler **/
+        item.ondragend = () => {
+            item.classList.remove('img-dragging')
+        }
+    })
+}
+
+/** create image from editor canvas **/
+function createImageFromEditor() {
+    const canvas = document.getElementById('editor')
+    const imgSrc = canvas.toDataURL('image/png')
+    //todo to server
+
+    // const a = document.createElement('a')
+    // a.href = imgSrc
+    // a.download = "true"
+    // a.title = "lle"
+    // const linkText = document.createTextNode("my title text")
+    // a.appendChild(linkText)
+    // a.appendChild(linkText);
+    // document.body.appendChild(a)
+}
+
+//todo test
+function testPost() {
+    $.post(document.location.origin + '/http/workPermitMapEditor', {
+        kek: 'kek',
+        lol: 19
+    })
+}
+
+/** load background image to html **/
+function loadBackGroundImage(imgURl) {
+    const backGroundImageId = 'background-image'
+    $(`#${backGroundImageId}`).remove()
+    const img = document.createElement('img')
+    img.style.display = 'none'
+    img.src = imgURl
+    img.id = backGroundImageId
+    $(`#${ELEMENTS.editor}`).parent().append(img)
+}
+
+/** set background image which already exists on the page (display: none) **/
+function setBackGround() {
+    setImgAsBackground(editor, 'background-image')
+}
+
+/** remove background image **/
+function resetBackGround() {
+    editor.setBackgroundImage(0, editor.renderAll.bind(editor))
+}
+
+//todo костыль для инициализации, переделать по событию загрузки страницы
+setTimeout(initialFunction, 500)

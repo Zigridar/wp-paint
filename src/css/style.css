@@ -1,12 +1,22 @@
 .main-container {
     display: inline-block;
-    position: relative;
+    position: relative !important;
+    top: 8px;
+    outline: 2px black solid;
 }
- #tool-container {
-     overflow-y: auto;
-     background-color: #8984f1;
-     user-select: none;
- }
+#tool-container {
+    overflow-y: auto;
+    background-color: #8984f1;
+    user-select: none;
+    outline: 2px black solid;
+}
+
+#editor-container {
+    outline: 2px black solid;
+    width: 100%;
+    height: 100%;
+}
+
 div ::-webkit-scrollbar {
     width: 5px;
 }
@@ -60,4 +70,8 @@ div ::-webkit-scrollbar-thumb:hover {
 
 #img-container, #icon-bar {
     display: inline-block;
+}
+
+.tool-img {
+    -webkit-user-drag: element;
 }

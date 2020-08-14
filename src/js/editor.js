@@ -46,7 +46,7 @@ const initialFunction = () => {
     })
 
     editor = new fabric.Canvas(ELEMENTS.editor, {
-        backgroundColor: 'rgb(255,238,205)'
+        backgroundColor: 'rgb(255,255,255)'
     })
 
     /** set plan dimensions **/
@@ -341,9 +341,9 @@ function initEditor() {
     $('.tool-img').each((index, item) => {
         item.draggable = true
         item.ondragstart = e => {
-            item.classList.add('img-dragging') //todo repair relative offset
-            item.customOffsetX = e.clientX - item.offsetLeft
-            item.customOffsetY = e.clientY - item.offsetTop
+            item.classList.add('img-dragging')
+            item.customOffsetX = e.clientX - item.offsetLeft - 15
+            item.customOffsetY = e.clientY - item.offsetTop - 90
         }
         /** drag end handler **/
         item.ondragend = () => {
@@ -366,14 +366,6 @@ function createImageFromEditor() {
     // a.appendChild(linkText)
     // a.appendChild(linkText);
     // document.body.appendChild(a)
-}
-
-//todo test
-function testPost() {
-    $.post(document.location.origin + '/http/workPermitMapEditor', {
-        kek: 'kek',
-        lol: 19
-    })
 }
 
 /** load background image to html **/

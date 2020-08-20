@@ -3,8 +3,9 @@
 /** global constants **/
 const WINDOW_SCALE_FACTOR = 0.99
 
-/** global editor link **/
+/** global canvas links **/
 let editor = null
+let plan = null
 
 const ELEMENTS =
         {
@@ -22,7 +23,11 @@ const ELEMENTS =
             resetZoomBtn: 'reset-zoom',
             createRectBtn: 'create-rect',
             createCircleBtn: 'create-circle',
-            createLineBtn: 'create-line'
+            createLineBtn: 'create-line',
+            captureCanvas: 'capture-canvas',
+            imageBox: 'image-box',
+            backgroundImageBtn: 'background-image-button',
+            initPageBtn: 'page-init-button'
         }
 
 /** freeze const object **/
@@ -40,14 +45,19 @@ const initialFunction = () => {
     const $leftContainer = $(`#${ELEMENTS.leftContainer}`)
     const $editorContainer = $(`#${ELEMENTS.editorContainer}`)
 
-    //todo gen plan
-    const plan = new fabric.Canvas(ELEMENTS.plan, {
-        backgroundColor: 'rgb(198,197,250)'
+    plan = new fabric.Canvas(ELEMENTS.plan, {
+        backgroundColor: 'rgb(255,255,255)'
     })
 
     editor = new fabric.Canvas(ELEMENTS.editor, {
         backgroundColor: 'rgb(255,255,255)'
     })
+
+    /** editor background image id **/
+    editor.backgroundImageID = 'editor-background'
+
+    /** main plan background image id **/
+    plan.backgroundImageID = 'plan-background'
 
     /** set plan dimensions **/
     plan.setWidth(WIDTH * 0.3)
@@ -110,6 +120,7 @@ function setImgAsBackground(fabricCanvas, imgId) {
         fabricImg.left = (fabricCanvas.width - fabricImg.width * scaleFactor) / 2
     }
     fabricCanvas.setBackgroundImage(fabricImg, fabricCanvas.renderAll.bind(fabricCanvas))
+    fabricCanvas.renderAll()
     return fabricImg
 }
 
@@ -233,7 +244,6 @@ function addEditorHandlers(fabricCanvas, canvasContainer) {
         const img = document.querySelector('img.img-dragging')
         const fabricImg = createImgFromElem(img, pointer.x - img.customOffsetX, pointer.y - img.customOffsetY)
         fabricCanvas.add(fabricImg)
-        createImageFromEditor()
     }
     /** drag over handler **/
     canvasContainer.ondragover = e => {
@@ -334,7 +344,6 @@ function createLine() {
 
 /** init editor **/
 function initEditor() {
-    //todo
     /** drop default onDragStart listener **/
     document.ondragstart = undefined
     /**  add drag & drop listeners **/
@@ -352,42 +361,39 @@ function initEditor() {
     })
 }
 
-/** create image from editor canvas **/
-function createImageFromEditor() {
-    const canvas = document.getElementById('editor')
-    const imgSrc = canvas.toDataURL('image/png')
-    //todo to server
-
-    // const a = document.createElement('a')
-    // a.href = imgSrc
-    // a.download = "true"
-    // a.title = "lle"
-    // const linkText = document.createTextNode("my title text")
-    // a.appendChild(linkText)
-    // a.appendChild(linkText);
-    // document.body.appendChild(a)
-}
-
 /** load background image to html **/
-function loadBackGroundImage(imgURl) {
-    const backGroundImageId = 'background-image'
-    $(`#${backGroundImageId}`).remove()
+function loadBackGroundImage(imgURl, canvas) {
+    $(`#${canvas.backgroundImageID}`).remove()
     const img = document.createElement('img')
     img.style.display = 'none'
     img.src = imgURl
-    img.id = backGroundImageId
+    img.id = canvas.backgroundImageID
     $(`#${ELEMENTS.editor}`).parent().append(img)
+    setTimeout(() => {
+        setBackGround(canvas)
+    }, 500) //todo
 }
 
 /** set background image which already exists on the page (display: none) **/
-function setBackGround() {
-    setImgAsBackground(editor, 'background-image')
+function setBackGround(canvas) {
+    resetBackGround(canvas)
+    setImgAsBackground(canvas, canvas.backgroundImageID)
 }
 
 /** remove background image **/
-function resetBackGround() {
-    editor.setBackgroundImage(0, editor.renderAll.bind(editor))
+function resetBackGround(canvas) {
+    canvas.setBackgroundImage(0, canvas.renderAll.bind(canvas))
 }
 
-//todo костыль для инициализации, переделать по событию загрузки страницы
-setTimeout(initialFunction, 500)
+/** waiting when JSF page will have loaded (document.load analog) **/
+invokeWhenPageReady(() => {
+    initialFunction()
+    $(`#${ELEMENTS.initPageBtn}`).click()
+})
+
+/** take screenshot (server handler) **/
+function takeScreenshot() {
+    setTimeout(() => {
+        $('#capture-canvas').click()
+    }, 0)
+}

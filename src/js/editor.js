@@ -65,7 +65,7 @@ const initialFunction = () => {
 
     /** set editor dimensions **/
     editor.setWidth(WIDTH * 0.7)
-    //todo
+    //todo A4 page format
     editor.setHeight(HEIGHT)
 
     $leftContainer.css('width', WIDTH * 0.3)
@@ -77,19 +77,44 @@ const initialFunction = () => {
     $editorContainer.css('width', WIDTH * 0.7)
     $editorContainer.css('height', HEIGHT)
 
+    /** canvas containers **/
     const editorContainer = document.getElementById(ELEMENTS.editorContainer)
-    /** add canvas handlers **/
-    addEditorHandlers(editor, editorContainer)
+    const planContainer = document.getElementById(ELEMENTS.planContainer)
 
-    /** set toolbar handlers **/
+    /** add editor handlers **/
+    addEditorHandlers(editor, editorContainer)
+    /** add plan handlers **/
+    addEditorHandlers(plan, planContainer)
+
+
+    const $deleteBtn = $(`#${ELEMENTS.deleteBtn}`)
+    const $createTextBtn = $(`#${ELEMENTS.createTextBtn}`)
+    const $resetZoomBtm = $(`#${ELEMENTS.resetZoomBtn}`)
+    const $createRectBtn = $(`#${ELEMENTS.createRectBtn}`)
+    const $createCircleBtn = $(`#${ELEMENTS.createCircleBtn}`)
+    const $createLineBtn = $(`#${ELEMENTS.createLineBtn}`)
+
+
+    /** set toolbar handlers for editor **/
     addToolbarHandlers(
-        $(`#${ELEMENTS.deleteBtn}`),
-        $(`#${ELEMENTS.createTextBtn}`),
-        $(`#${ELEMENTS.resetZoomBtn}`),
-        $(`#${ELEMENTS.createRectBtn}`),
-        $(`#${ELEMENTS.createCircleBtn}`),
-        $(`#${ELEMENTS.createLineBtn}`),
+        $deleteBtn,
+        $createTextBtn,
+        $resetZoomBtm,
+        $createRectBtn,
+        $createCircleBtn,
+        $createLineBtn,
         editor
+    )
+
+    /** set toolbar handlers for main plan **/
+    addToolbarHandlers(
+        $deleteBtn,
+        $createTextBtn,
+        null,
+        $createRectBtn,
+        $createCircleBtn,
+        $createLineBtn,
+        plan
     )
 
     /** init editor tool handlers **/
@@ -265,6 +290,7 @@ function addToolbarHandlers(
     fabricCanvas
     ) {
     /** delete button handler **/
+    if (deleteBtn)
     deleteBtn.click(e => {
         const activeObjects = fabricCanvas.getActiveObjects()
         activeObjects.forEach(object => {
@@ -273,28 +299,33 @@ function addToolbarHandlers(
         fabricCanvas.discardActiveObject(e)
     })
     /** reset zoom button handler **/
+    if (resetZoomBtn)
     resetZoomBtn.click(() => {
         fabricCanvas.setViewportTransform([1, 0, 0, 1, 0, 0])
     })
     /** add text button handler **/
+    if (createTextBtn)
     createTextBtn.click(() => {
         $('.active').removeClass('active')
         createTextBtn.addClass('active')
         fabricCanvas.currentCreatingObject = createTextBox()
     })
     /** create circle **/
+    if (createCircleBtn)
     createCircleBtn.click(() => {
         $('.active').removeClass('active')
         createCircleBtn.addClass('active')
         fabricCanvas.currentCreatingObject = createCircle()
     })
     /** create rect **/
+    if (createRectBtn)
     createRectBtn.click(() => {
         $('.active').removeClass('active')
         createRectBtn.addClass('active')
         fabricCanvas.currentCreatingObject = createRect()
     })
     /** create line **/
+    if (createLineBtn)
     createLineBtn.click(() => {
         $('.active').removeClass('active')
         createLineBtn.addClass('active')
